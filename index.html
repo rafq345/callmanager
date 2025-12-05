@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Call Manager - Разговор с ИИ</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ AI Call Manager</h1>
+            <p class="subtitle">Разговор с ИИ как с обычным человеком</p>
+        </header>
+
+        <div class="main-content">
+            <div class="settings-panel">
+                <div class="setting-group" style="position: relative;">
+                    <label for="apiKey">OpenAI API Key:</label>
+                    <div style="position: relative;">
+                        <input type="password" id="apiKey" placeholder="sk-..." style="width: 100%; padding-right: 50px;" />
+                        <button id="toggleApiKey" class="toggle-btn" type="button">👁️</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label for="microphone">Микрофон:</label>
+                    <select id="microphone">
+                        <option value="">Загрузка устройств...</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="speaker">Динамик:</label>
+                    <select id="speaker">
+                        <option value="">Загрузка устройств...</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="model">Модель Realtime API:</label>
+                    <select id="model">
+                        <option value="gpt-realtime-mini" selected>gpt-realtime-mini</option>
+                        <option value="gpt-4o-realtime-preview-2024-10-01">gpt-4o-realtime-preview-2024-10-01</option>
+                        <option value="gpt-4o-realtime-preview-2024-12-17">gpt-4o-realtime-preview-2024-12-17</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="voice">Голос:</label>
+                    <select id="voice">
+                        <option value="alloy">alloy</option>
+                        <option value="echo">echo</option>
+                        <option value="fable">fable</option>
+                        <option value="onyx">onyx</option>
+                        <option value="nova">nova</option>
+                        <option value="shimmer">shimmer</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label for="systemPromptFile">System Prompt (TXT файл):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="systemPromptFile" accept=".txt" />
+                        <span id="fileName">Файл не выбран</span>
+                    </div>
+                    <textarea id="systemPrompt" placeholder="Или введите system prompt вручную..." rows="4"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button id="connectBtn" class="btn btn-primary">Подключиться</button>
+                    <button id="disconnectBtn" class="btn btn-secondary" disabled>Отключиться</button>
+                    <button id="applyPromptBtn" class="btn btn-secondary" disabled>Применить промпт</button>
+                </div>
+            </div>
+
+            <div class="call-panel">
+                <div class="status-indicator">
+                    <div id="statusDot" class="status-dot"></div>
+                    <span id="statusText">Отключено</span>
+                </div>
+
+                <div class="audio-visualizer">
+                    <canvas id="audioVisualizer"></canvas>
+                </div>
+
+                <div class="call-controls">
+                    <button id="muteBtn" class="control-btn" disabled>
+                        <span class="icon">🔇</span>
+                        <span>Отключить микрофон</span>
+                    </button>
+                </div>
+
+                <div class="transcript-panel">
+                    <h3>Транскрипция:</h3>
+                    <div id="transcript" class="transcript-content"></div>
+                </div>
+
+                <div class="diagnostics-panel">
+                    <h3>🔍 Диагностика соединения:</h3>
+                    <div id="diagnostics" class="diagnostics-content"></div>
+                    <button id="clearDiagnostics" class="btn btn-small">Очистить логи</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
