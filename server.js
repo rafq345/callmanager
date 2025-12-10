@@ -253,8 +253,8 @@ app.post('/realtime/calls', async (req, res) => {
     }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
     console.log(`Сервер запущен на http://localhost:${PORT}`);
-    console.log('Откройте браузер и перейдите по адресу http://localhost:3000');
+    console.log('Откройте браузер и перейдите по адресу http://localhost:4000');
 });

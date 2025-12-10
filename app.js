@@ -24,6 +24,23 @@ let websocketApiKey = null; // API ключ для переподключени�
 let websocketModel = null; // Модель для переподключения
 let websocketVoice = null; // Голос для переподключения
 
+// Функция для определения базового пути приложения
+function getBasePath() {
+    // Если приложение работает по подпути /callmanager
+    if (window.location.pathname.startsWith('/callmanager')) {
+        return '/callmanager';
+    }
+    return '';
+}
+
+// Функция для получения базового URL сервера
+function getServerBaseUrl() {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const host = window.location.host;
+    const basePath = getBasePath();
+    return `${protocol}//${host}${basePath}`;
+}
+
 // Элементы DOM
 const apiKeyInput = document.getElementById('apiKey');
 const toggleApiKeyBtn = document.getElementById('toggleApiKey');
@@ -684,7 +701,12 @@ async function setupWebSocketForControl(apiKey, model, voice) {
         console.log('Настройка WebSocket для управления сессией...');
         logDiagnostic('info', 'Настройка WebSocket для управления...');
         
-        const wsUrl = `ws://localhost:3000/ws-proxy`;
+        // Используем динамический URL с учетом базового пути
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const host = window.location.host;
+        const basePath = getBasePath();
+        const wsUrl = `${protocol}//${host}${basePath}/ws-proxy`;
+        console.log('WebSocket URL:', wsUrl);
         websocket = new WebSocket(wsUrl);
         
         websocket.onopen = () => {
