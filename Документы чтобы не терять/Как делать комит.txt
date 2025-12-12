@@ -1,0 +1,42 @@
+На локальной машине (где вы работаете)
+1. Перейдите в директорию проекта
+cd C:\AIProgram\CallManager\Cursor2
+2. Проверьте статус изменений
+git status
+3. Добавьте все изменения
+git add .
+Или добавьте конкретные файлы:
+git add app.js server.js index.html ecosystem.config.js DEPLOYMENT.md
+4. Создайте коммит
+git commit -m "Автоматическая отправка системного промпта при подключении"
+5. Отправьте изменения на GitHub
+git push origin main
+Если ветка называется master:
+git push origin master
+На VPS (обновление кода)
+1. Подключитесь к VPS
+ssh user@your-vps-ip
+2. Перейдите в директорию проекта
+cd /var/www/callmanager
+3. Получите последние изменения
+git pull origin main
+Или если ветка master:
+git pull origin master
+4. Установите зависимости (если нужно)
+npm install --production
+5. Перезапустите приложение
+pm2 restart callmanager
+Если репозиторий еще не настроен на VPS
+Если на VPS еще нет клонированного репозитория:
+cd /var/wwwsudo rm -rf callmanager  # Если папка уже существует с другим содержимымsudo mkdir -p callmanagersudo chown $USER:$USER callmanagercd callmanagergit clone https://github.com/YOUR_USERNAME/callmanager.git .# Замените YOUR_USERNAME на ваш GitHub usernamenpm install --productionpm2 start ecosystem.config.js
+Полезные команды Git
+# Посмотреть историю коммитовgit log --oneline# Посмотреть изменения перед коммитомgit diff# Отменить изменения в файле (если нужно)git checkout -- filename# Посмотреть удаленные репозиторииgit remote -v
+Если возникли проблемы
+Ошибка "not a git repository":
+# Убедитесь, что вы в правильной директорииcd C:\AIProgram\CallManager\Cursor2# Проверьте наличие .git папкиdir .git
+Ошибка авторизации при push:
+Используйте Personal Access Token вместо пароля
+Или настройте SSH ключи для GitHub
+Конфликты при pull на VPS:
+# Сохраните локальные изменения (если есть)git stash# Получите измененияgit pull origin main# Примените сохраненные изменения (если нужно)git stash pop
+После git push на локальной машине и git pull на VPS код будет обновлен на сервере.
