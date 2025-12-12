@@ -411,6 +411,32 @@ async function setupWebRTCConnection(apiKey, model, voice) {
                     applyPromptBtn.disabled = false;
                 }
                 logDiagnostic('success', 'WebRTC соединение установлено');
+                
+                // Отправляем системный промпт сразу после полного установления соединения
+                const channel = peerConnection.dataChannel;
+                if (channel && channel.readyState === 'open') {
+                    // Небольшая задержка для гарантии стабильности соединения
+                    setTimeout(() => {
+                        sendSystemPromptOnConnect(channel);
+                    }, 100);
+                } else {
+                    // Если DataChannel еще не открыт, ждем его открытия
+                    const checkDataChannel = setInterval(() => {
+                        const ch = peerConnection.dataChannel;
+                        if (ch && ch.readyState === 'open') {
+                            clearInterval(checkDataChannel);
+                            sendSystemPromptOnConnect(ch);
+                        } else if (ch && ch.readyState === 'closed') {
+                            clearInterval(checkDataChannel);
+                            logDiagnostic('error', 'DataChannel закрыт до отправки промпта');
+                        }
+                    }, 100);
+                    
+                    // Таймаут на случай, если DataChannel не откроется
+                    setTimeout(() => {
+                        clearInterval(checkDataChannel);
+                    }, 5000);
+                }
             } else if (state === 'disconnected') {
                 logDiagnostic('warn', 'WebRTC соединение разорвано, пытаемся восстановить...');
                 updateStatus('connecting', 'Переподключение...');
@@ -471,38 +497,10 @@ async function setupWebRTCConnection(apiKey, model, voice) {
         const dataChannel = peerConnection.createDataChannel('oai-events');
         
         dataChannel.addEventListener('open', () => {
-            logDiagnostic('success', 'DataChannel открыт, отправляем session.update');
+            logDiagnostic('success', 'DataChannel открыт');
             
-            // Получаем актуальный промпт из textarea (как в рабочем коде)
-            const promptText = systemPromptTextarea.value.trim() || currentSystemPrompt || 'Ты голосовой ассистент, говоришь по-русски, отвечаешь коротко и дружелюбно.';
-            currentSystemPrompt = promptText;
-            
-            logDiagnostic('info', `Отправляем промпт: ${promptText.substring(0, 50)}...`);
-            
-            // Отправляем session.update через DataChannel
-            const sessionUpdate = {
-                type: 'session.update',
-                session: {
-                    instructions: promptText,
-                    input_audio_format: 'opus',
-                    output_audio_format: 'opus',
-                    modalities: ['audio'],
-                    turn_detection: {
-                        type: 'server_vad',
-                        threshold: 0.5,
-                        prefix_padding_ms: 300,
-                        silence_duration_ms: 500,
-                        create_response: true,
-                        interrupt_response: true
-                    }
-                }
-            };
-            
-            const updateMessage = JSON.stringify(sessionUpdate);
-            logDiagnostic('debug', `Отправляем session.update: ${updateMessage.substring(0, 200)}...`);
-            
-            dataChannel.send(updateMessage);
-            logDiagnostic('success', 'session.update отправлен через DataChannel');
+            // Промпт будет отправлен после полного установления соединения
+            // в обработчике connectionState === 'connected'
         });
         
         dataChannel.addEventListener('message', (event) => {
@@ -800,6 +798,51 @@ function reconnectWebSocket() {
     // Сессия уже настроена через WebRTC, поэтому не переподключаемся бесконечно
     logDiagnostic('info', 'WebSocket для управления не критичен при использовании WebRTC. Сессия работает через WebRTC.');
     return;
+}
+
+// Отправка системного промпта при установлении соединения
+function sendSystemPromptOnConnect(dataChannel) {
+    if (!dataChannel || dataChannel.readyState !== 'open') {
+        logDiagnostic('warn', 'DataChannel не готов для отправки промпта при подключении');
+        return;
+    }
+    
+    // Получаем актуальный промпт из textarea
+    const promptText = systemPromptTextarea.value.trim() || currentSystemPrompt || 'Ты голосовой ассистент, говоришь по-русски, отвечаешь коротко и дружелюбно.';
+    currentSystemPrompt = promptText;
+    
+    logDiagnostic('info', `Отправляем системный промпт при подключении: ${promptText.substring(0, 50)}...`);
+    
+    try {
+        // Отправляем полный session.update с промптом и настройками
+        const sessionUpdate = {
+            type: 'session.update',
+            session: {
+                instructions: promptText,
+                input_audio_format: 'opus',
+                output_audio_format: 'opus',
+                modalities: ['audio'],
+                turn_detection: {
+                    type: 'server_vad',
+                    threshold: 0.5,
+                    prefix_padding_ms: 300,
+                    silence_duration_ms: 500,
+                    create_response: true,
+                    interrupt_response: true
+                }
+            }
+        };
+        
+        const updateMessage = JSON.stringify(sessionUpdate);
+        logDiagnostic('debug', `Отправляем session.update: ${updateMessage.substring(0, 200)}...`);
+        
+        dataChannel.send(updateMessage);
+        logDiagnostic('success', 'Системный промпт отправлен при установлении соединения');
+        console.log('Системный промпт отправлен при подключении');
+    } catch (error) {
+        logDiagnostic('error', `Ошибка отправки промпта при подключении: ${error.message}`);
+        console.error('Ошибка отправки промпта при подключении:', error);
+    }
 }
 
 // Отправка системного промпта
