@@ -1,4 +1,6 @@
 @echo off
+chcp 65001 > nul
+
 cd /d C:\AIProgram\CallManager\Cursor2
 
 echo === Проверка статуса ===
